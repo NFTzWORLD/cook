@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>COOK TIME</title>
+<style>
+  :root { color-scheme: dark; --accent: 290; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: #07080c; color: #e8eef6; font-family: ui-monospace, Menlo, monospace; }
+  body { display: grid; place-items: center; padding: 12px; width: 100%; background: var(--page, #07080c); }
+  .slab {
+    --c0: #222633; --c1: #12141b; --c2: #0c0e14;
+    --edge: rgba(255,255,255,.18); --lip: hsl(var(--accent), 72%, 58%);
+    --plate: #9aa6bb; --btn: #171a22; --btnink: inherit; --lcdbg: #05070b;
+    --key: #1a1e28; --keyink: #c5d0e0; --page: #07080c;
+    width: min(100%, 640px);
+    max-width: 100%;
+    min-width: 0;
+    background: linear-gradient(180deg, var(--c0) 0%, var(--c1) 42%, var(--c2) 100%);
+    border: 1px solid var(--edge);
+    border-radius: 28px;
+    padding: 14px 16px 14px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.2);
+    position: relative;
+  }
+  .slab[data-skin="carbon"] { --c0:#2a3548; --c1:#121820; --c2:#080b10; --edge:#56a8d6; --lip:#40c4e8; --page:#070b12; }
+  .slab[data-skin="chrome"] { --c0:#f4f6fa; --c1:#c5ccd6; --c2:#9aa3b0; --edge:#ffffff; --lip:#16181e; --plate:#1c212a; --btn:#eef1f6; --btnink:#1c212a; --key:#222833; --keyink:#eef3f8; --page:#8b93a0; }
+  .slab[data-skin="canary"] { --c0:#3e2a0c; --c1:#1a1208; --c2:#0c0906; --edge:#ffb030; --lip:#ffb020; --page:#140e06; }
+  .slab[data-skin="phosphor"] { --c0:#0c2a18; --c1:#06140c; --c2:#030806; --edge:#39ff88; --lip:#39ff88; --page:#03110a; }
+  .slab[data-skin="pager"] { --c0:#3e1018; --c1:#1a080c; --c2:#0a0406; --edge:#ff4060; --lip:#ff3050; --page:#14060a; }
+  .slab[data-skin="violet"] { --c0:#301854; --c1:#160a28; --c2:#0a0612; --edge:#ba8cff; --lip:#b078ff; --page:#12081c; }
+  .slab[data-skin="blueprint"] {
+    --c0:#102440; --c1:#071224; --c2:#040a14; --edge:#5a96dc; --lip:#7eb6ff; --page:#040a14;
+    background-color: #071224;
+    background-image:
+      linear-gradient(180deg, rgba(16,36,64,.55), rgba(4,10,20,.72)),
+      repeating-linear-gradient(0deg, transparent 0 18px, rgba(126,182,255,.16) 19px),
+      repeating-linear-gradient(90deg, transparent 0 18px, rgba(126,182,255,.16) 19px);
+  }
+  .slab[data-skin="copper"] { --c0:#482818; --c1:#20120c; --c2:#0c0806; --edge:#e8a06a; --lip:#e8965a; --page:#140c08; }
+  .slab[data-skin="gate"] { --c0:#161c08; --c1:#0a0c06; --c2:#050604; --edge:#CCFF00; --lip:#CCFF00; --page:#070806; }
+  .slab:before, .slab:after {
+    content: ""; position: absolute; width: 8px; height: 8px; border-radius: 50%;
+    background: #2a2e3a; box-shadow: inset 0 0 0 2px #0a0c12;
+  }
+  .slab:before { top: 10px; left: 12px; }
+  .slab:after { top: 10px; right: 12px; }
+  .topline { display: flex; align-items: center; gap: 8px; margin: 8px 4px 2px; min-width: 0; }
+  .brand { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
+  .brand b { font-family: Impact, "Arial Black", sans-serif; font-weight: 900; font-size: 22px; letter-spacing: -.03em; color: #F5C518; line-height: 1; }
+  .brand span { font-family: Impact, "Arial Black", sans-serif; font-size: 11px; letter-spacing: .18em; color: var(--plate); }
+  .skinlab { margin-left: auto; font-style: normal; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--lip); }
+  .gateart { display: none; width: 32px; height: 32px; border-radius: 5px; flex: none; }
+  .slab[data-skin="gate"] .gateart { display: block; }
+  .lip { height: 6px; border-radius: 999px; background: var(--lip); margin: 6px 4px 0; box-shadow: 0 0 10px color-mix(in srgb, var(--lip) 55%, transparent); }
+  header { display: flex; align-items: center; gap: 8px; margin: 8px 4px 10px; flex-wrap: wrap; min-width: 0; }
+  #plate { letter-spacing: .22em; font-size: 13px; color: var(--plate); }
+  #lamp {
+    width: 10px; height: 10px; border-radius: 50%; background: #243044;
+    box-shadow: inset 0 0 0 1px #0b1220; margin-left: auto;
+  }
+  .slab.coding #lamp { background: hsl(var(--accent), 80%, 62%); box-shadow: 0 0 10px hsl(var(--accent), 90%, 60%); }
+  .slab.egg #lamp, .slab.night #lamp { background: #d7ff6a; box-shadow: 0 0 12px #d7ff6a; }
+  button { font: inherit; color: inherit; }
+  #cutBtn, #armBtn, #voiceBtn, #spaceBtn {
+    background: var(--btn); color: var(--btnink); border: 1px solid rgba(255,255,255,.12); border-radius: 999px;
+    padding: 6px 10px; min-height: 36px;
+  }
+  #armBtn[aria-pressed="true"] { background: hsl(var(--accent), 70%, 46%); color: #061018; }
+  #lcd {
+    background: var(--lcdbg); border-radius: 16px; min-height: 92px; padding: 14px 16px 16px;
+    border: 1px solid var(--lip);
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,.04), 0 0 24px hsl(var(--accent), 80%, 40%, .15);
+  }
+  #lcdKicker { display: block; color: hsl(var(--accent), 75%, 66%); font-size: 11px; letter-spacing: .16em; }
+  #lcdText { display: block; margin-top: 8px; font-size: 20px; line-height: 1.25; font-weight: 700; }
+  #keys {
+    margin-top: 12px; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px;
+    min-width: 0;
+  }
+  .key {
+    aspect-ratio: 1; width: 100%; border: 0; border-radius: 10px; background: var(--key); color: var(--keyink);
+    position: relative; padding: 0; min-width: 0; min-height: 0; touch-action: manipulation;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 1px 0 #000;
+    overflow: hidden;
+  }
+  .key b { display: block; font-size: 8px; letter-spacing: 0; line-height: 1.05; padding: 0 1px; }
+  .key .led {
+    position: absolute; top: 6px; left: 6px; width: 6px; height: 6px; border-radius: 50%;
+    background: hsl(var(--h), 70%, 32%);
+  }
+  .key.cursor { outline: 1px solid rgba(255,255,255,.45); outline-offset: 1px; }
+  .key.near { background: hsl(var(--h), 35%, 18%); }
+  .key.near .led { background: hsl(var(--h), 80%, 48%); }
+  .key.hot, .key.wave {
+    background: hsl(var(--h), 78%, 58%); color: #071018;
+    box-shadow: 0 0 16px hsl(var(--h), 90%, 58%);
+  }
+  .key.hot .led, .key.wave .led { background: #fff; }
+  .slab.night { background: linear-gradient(180deg, #141018, #07060a 50%, #05040a); }
+  .slab.night #lcd { border-color: #d7ff6a; }
+  .joke-lamp {
+    display: none; width: 8px; height: 8px; border-radius: 50%; background: #d7ff6a;
+    box-shadow: 0 0 10px #d7ff6a;
+  }
+  .slab.night .joke-lamp, .slab.joke .joke-lamp { display: inline-block; }
+  footer { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  #spaceBtn[aria-pressed="true"] { background: #243044; }
+  body:has([data-skin="carbon"]) { background: #070b12; }
+  body:has([data-skin="chrome"]) { background: #8b93a0; }
+  body:has([data-skin="canary"]) { background: #140e06; }
+  body:has([data-skin="phosphor"]) { background: #03110a; }
+  body:has([data-skin="pager"]) { background: #14060a; }
+  body:has([data-skin="violet"]) { background: #12081c; }
+  body:has([data-skin="blueprint"]) { background: #040a14; }
+  body:has([data-skin="copper"]) { background: #140c08; }
+  body:has([data-skin="gate"]) { background: #070806; }
+  @media (prefers-reduced-motion: reduce) {
+    .key { transition: none; }
+  }
+  @media (max-width: 520px) {
+    body { padding: 8px; }
+    .slab { padding: 12px 8px 10px; border-radius: 20px; }
+    .key b { font-size: 7px; }
+    #lcdText { font-size: 17px; }
+    #plate { letter-spacing: .12em; }
+  }
+</style>
+</head>
+<body>
+  <div class="slab" id="slab" data-skin="pager">
+    <div class="topline">
+      <div class="brand" aria-label="NFTzWORLD"><b>NFTz</b><span>WORLD</span></div>
+      <em class="skinlab">Pager</em>
+      <svg class="gateart" viewBox="0 0 1024 1024" aria-hidden="true">
+        <rect width="1024" height="1024" fill="#000"/>
+        <rect width="1024" height="168" fill="#CCFF00"/>
+        <rect x="196" y="340" width="96" height="470" rx="18" fill="#CCFF00"/>
+        <rect x="732" y="340" width="96" height="470" rx="18" fill="#CCFF00"/>
+        <rect x="196" y="340" width="632" height="96" rx="18" fill="#CCFF00"/>
+        <rect x="430" y="520" width="164" height="290" rx="16" fill="#CCFF00"/>
+      </svg>
+    </div>
+    <div class="lip"></div>
+    <header>
+      <b id="plate">COOK</b>
+      <i class="joke-lamp" aria-hidden="true"></i>
+      <i id="lamp" aria-hidden="true"></i>
+      <button type="button" id="cutBtn">CUT</button>
+      <button type="button" id="armBtn" aria-pressed="false">ARM</button>
+    </header>
+    <div id="lcd">
+      <i id="lcdKicker">TIME</i>
+      <b id="lcdText">the call timed out.</b>
+    </div>
+    <div id="keys"></div>
+    <footer>
+      <button type="button" id="voiceBtn">Grandma</button>
+      <button type="button" id="spaceBtn" aria-pressed="false">SPACE</button>
+    </footer>
+  </div>
+  <script>
+  (() => {
+    const KEYS = [{"code":"SHIP","say":"Ship it. The branch is the plate.","show":"ship it.","group":"Build","hue":188},{"code":"BUILD","say":"The build is the truth. Leave it green.","show":"the build is the truth.","group":"Build","hue":192},{"code":"DIFF","say":"The diff is the argument. Read it.","show":"the diff is the argument.","group":"Build","hue":196},{"code":"PATCH","say":"Small patch. Name what broke.","show":"small patch. name what broke.","group":"Build","hue":200},{"code":"REBASE","say":"Rebase onto today. Do not rewrite the one that shipped.","show":"rebase onto today.","group":"Build","hue":204},{"code":"MERGE","say":"Merge when the review is a yes.","show":"merge when the review is a yes.","group":"Build","hue":208},{"code":"SQUASH","say":"Squash the noise. Keep the why.","show":"squash the noise. keep the why.","group":"Build","hue":212},{"code":"TAG","say":"Tag the build. The tag is the name.","show":"tag the build.","group":"Build","hue":216},{"code":"LGTM","say":"Looks good. Send the comment with the approval.","show":"looks good.","group":"Review","hue":198},{"code":"NIT","say":"Nit. Not a blocker. Still a nit.","show":"nit. not a blocker.","group":"Review","hue":202},{"code":"WIP","say":"Work in progress. Do not review the scratch.","show":"work in progress.","group":"Review","hue":206},{"code":"FIXME","say":"Fix me. The comment outlived the author.","show":"fix me. the comment stayed.","group":"Review","hue":210},{"code":"HACK","say":"It works. Write the date on the hack.","show":"it works. date the hack.","group":"Review","hue":214},{"code":"SCOPE","say":"That is out of scope. Park it.","show":"out of scope. park it.","group":"Review","hue":218},{"code":"PAIR","say":"Pair on it. Two sets of eyes. One keyboard.","show":"pair. two sets of eyes.","group":"Review","hue":222},{"code":"GREEN","say":"The suite is green. Do not touch it for luck.","show":"the suite is green.","group":"Review","hue":226},{"code":"RED","say":"The suite is red. Read the first line.","show":"the suite is red.","group":"Pipe","hue":210},{"code":"FLAKE","say":"Flake. Run it again. Then believe it.","show":"flake. run it again.","group":"Pipe","hue":214},{"code":"CACHE","say":"The cache lied. Bust it.","show":"the cache lied.","group":"Pipe","hue":218},{"code":"ROLL","say":"Roll forward. Keep the old one up until this one answers.","show":"roll forward.","group":"Pipe","hue":222},{"code":"CANARY","say":"Canary first. One box. Then the rest.","show":"canary first. one box.","group":"Pipe","hue":226},{"code":"FLAG","say":"The flag is off. The code is in. The user does not see it.","show":"the flag is off.","group":"Pipe","hue":230},{"code":"DARK","say":"Dark launch. The path is live. The button is not.","show":"dark launch.","group":"Pipe","hue":234},{"code":"LOG","say":"Log the fact. Do not log the secret.","show":"log the fact.","group":"Pipe","hue":238},{"code":"TRACE","say":"Trace one request. Follow that one.","show":"trace one request.","group":"Debug","hue":224},{"code":"BREAK","say":"Breakpoint. The world waits on this line.","show":"breakpoint. the world waits.","group":"Debug","hue":228},{"code":"STEP","say":"Step over. The bug is in the line you skipped.","show":"step over. look at the skip.","group":"Debug","hue":232},{"code":"STACK","say":"Read the stack from the top.","show":"read the stack from the top.","group":"Debug","hue":236},{"code":"HEAP","say":"The heap grew. Something is keeping it.","show":"the heap grew.","group":"Debug","hue":240},{"code":"RACE","say":"Two writers. One row. That is the bug.","show":"two writers. one row.","group":"Debug","hue":244},{"code":"LOCK","say":"The lock is held. Name who holds it.","show":"name who holds the lock.","group":"Debug","hue":248},{"code":"LEAK","say":"The handle never closed.","show":"the handle never closed.","group":"Debug","hue":252},{"code":"PAGER","say":"The pager went off. Open the board.","show":"the pager went off.","group":"Incident","hue":262},{"code":"SEV","say":"Severity one. Talk in the room. Type in the log.","show":"severity one.","group":"Incident","hue":266},{"code":"HOT","say":"Hotfix. The smallest change that stops the bleed.","show":"hotfix. smallest change.","group":"Incident","hue":270},{"code":"REVERT","say":"Revert first. Understand second.","show":"revert first.","group":"Incident","hue":274},{"code":"BLAME","say":"Blame is a map. It is not a verdict.","show":"blame is a map.","group":"Incident","hue":278},{"code":"BISECT","say":"Bisect. The last green commit is the witness.","show":"bisect. find the witness.","group":"Incident","hue":282},{"code":"DRIFT","say":"The servers drifted. One of them is the old world.","show":"the servers drifted.","group":"Incident","hue":286},{"code":"TIME","say":"The call timed out. The work may still be running.","show":"the call timed out.","group":"Incident","hue":290},{"code":"PANIC","say":"Panic. The process left. The log is the note.","show":"panic. the process left.","group":"Crash","hue":284},{"code":"NULL","say":"Null walked in. Somebody skipped the check.","show":"null walked in.","group":"Crash","hue":288},{"code":"OOM","say":"Out of memory. The box died polite.","show":"out of memory.","group":"Crash","hue":292},{"code":"DISK","say":"The disk is full. The log ate it.","show":"the disk is full.","group":"Crash","hue":296},{"code":"CERT","say":"The certificate expired on a Friday.","show":"the certificate expired.","group":"Crash","hue":300},{"code":"CORS","say":"The browser refused the call. The server never saw you.","show":"the browser refused the call.","group":"Crash","hue":304},{"code":"STALE","say":"Stale read. You fixed the row the user does not have.","show":"stale read.","group":"Crash","hue":308},{"code":"QUEUE","say":"The queue is deep. The workers are few.","show":"the queue is deep.","group":"Crash","hue":312},{"code":"SEED","say":"Seed the local set. Do not seed the live one.","show":"seed the local set.","group":"Lab","hue":330},{"code":"MOCK","say":"The mock passed. The real one was never asked.","show":"the mock passed.","group":"Lab","hue":334},{"code":"STUB","say":"The stub returns the happy path and nothing else.","show":"the stub returns the happy path.","group":"Lab","hue":338},{"code":"SKIP","say":"Skipped. The comment says later.","show":"skipped. the comment says later.","group":"Lab","hue":342},{"code":"XFAIL","say":"Expected failure. Someone expected it for a year.","show":"expected failure.","group":"Lab","hue":346},{"code":"DEBT","say":"Name the debt. Name the interest.","show":"name the debt.","group":"Lab","hue":350},{"code":"YAK","say":"You came in to change one line. Then you shaved the yak.","show":"you shaved the yak.","group":"Lab","hue":354},{"code":"SHED","say":"The argument is the color of the button.","show":"the color of the button.","group":"Lab","hue":358},{"code":"COOK","say":"Let it cook. This board is the kitchen.","show":"let it cook.","group":"Kitchen","hue":22},{"code":"PLATE","say":"Plate it. The diff is the dish.","show":"plate the diff.","group":"Kitchen","hue":26},{"code":"SIMMER","say":"Simmer. Do not rush a migration.","show":"simmer. do not rush it.","group":"Kitchen","hue":30},{"code":"SERVE","say":"Serve it. The user is the table.","show":"serve it.","group":"Kitchen","hue":34},{"code":"TASTE","say":"Taste it yourself before you hand it over.","show":"taste it yourself.","group":"Kitchen","hue":38},{"code":"BURNT","say":"Burnt. Roll it back while it is still hot.","show":"burnt. roll it back.","group":"Kitchen","hue":42},{"code":"SCRAP","say":"Scrap the experiment. Keep the note.","show":"scrap it. keep the note.","group":"Kitchen","hue":46},{"code":"TICKET","say":"The ticket is still open. The cook is this board.","show":"the ticket is still open.","group":"Kitchen","hue":50}];
+    const EGG = {"name":"THE KITCHEN","seq":[0,15,56],"say":"The build was red. You waited for green. The cook is this board. Sixty-four take the ticket. Number sixty-five is the joke.","show":"ship. green. cook. sixty-five is the joke.","voice":"Bad News"};
+    const WORD = {"name":"LET IT COOK","seq":["c","o","o","k"],"say":"Let it cook. Sixty-four lights. The kitchen hears you.","show":"let it cook.","voice":"Good News"};
+    const NIGHT = {"name":"NIGHT KITCHEN","seq":["ArrowUp","ArrowUp","ArrowDown","ArrowDown","ArrowLeft","ArrowRight","ArrowLeft","ArrowRight","b","a"],"say":"You knew the old code. The night kitchen keeps one lamp for the joke.","show":"the night kitchen keeps one lamp.","voice":"Zarvox"};
+    const SERVICE = {"name":"THE SERVICE","say":"Every key. The board is cooked.","show":"every key. the board is cooked.","voice":"Superstar"};
+    const VOICES = ["Reed", "Samantha", "Rocko", "Ralph", "Albert", "Fred", "Superstar", "Good News", "Bad News", "Daniel", "Eddy", "Zarvox", "Trinoids", "Grandma", "Grandpa", "Jester", "Boing", "Bubbles", "Bahh", "Whisper", "Kathy", "Junior", "Cellos", "Bells", "Organ", "Wobble"];
+    const RATES = {"Rocko": 1.04, "Ralph": 0.86, "Reed": 0.98, "Albert": 1.05, "Fred": 0.96, "Superstar": 1.08, "Good News": 1.02, "Bad News": 0.9, "Daniel": 0.96, "Eddy": 1.0, "Samantha": 1.0, "Zarvox": 0.82, "Trinoids": 0.88, "Grandma": 0.94, "Grandpa": 0.84, "Jester": 1.05, "Boing": 1.0, "Bubbles": 1.0, "Bahh": 0.9, "Whisper": 0.8, "Kathy": 1.0, "Junior": 1.05, "Cellos": 0.9, "Bells": 0.9, "Organ": 0.85, "Wobble": 1.0};
+    const PITCH = {"Ralph": 0.7, "Zarvox": 0.55, "Whisper": 0.85, "Grandma": 1.15, "Grandpa": 0.75, "Junior": 1.25, "Fred": 0.9, "Albert": 0.95, "Bad News": 0.8, "Bahh": 0.6, "Trinoids": 0.7, "Boing": 1.2, "Bubbles": 1.3, "Cellos": 0.8, "Bells": 1.1, "Organ": 0.7, "Wobble": 1.15, "Jester": 1.1};
+    const HOT = 39;
+    const STORE = "nftzworld-cook-40";
+    const HOLD_MS = 4000;
+    const slab = document.getElementById("slab");
+    const keysEl = document.getElementById("keys");
+    const armBtn = document.getElementById("armBtn");
+    const cutBtn = document.getElementById("cutBtn");
+    const voiceBtn = document.getElementById("voiceBtn");
+    const spaceBtn = document.getElementById("spaceBtn");
+    const lcdKicker = document.getElementById("lcdKicker");
+    const lcdText = document.getElementById("lcdText");
+    const buttons = [];
+    let voiceName = "Grandma";
+    let armed = false;
+    let heard = false;
+    let talkToken = 0;
+    let spaceOn = false;
+    let buffer = [];
+    let wordBuf = [];
+    let nightBuf = [];
+    let holdTimer = 0;
+    let idleTimer = 0;
+    let eggTimer = 0;
+    let idleN = 0;
+    let started = false;
+    let cursor = HOT === null ? 56 : HOT;
+    let lit = HOT;
+    const played = new Set();
+    let served = false;
+
+    function show(kicker, text) {
+      lcdKicker.textContent = kicker;
+      lcdText.textContent = text;
+    }
+    function same(a, b) {
+      if (a.length !== b.length) return false;
+      for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+      return true;
+    }
+    function isPrefix(seq, buf) {
+      if (seq.length < buf.length) return false;
+      for (let i = 0; i < buf.length; i++) if (seq[i] !== buf[i]) return false;
+      return true;
+    }
+    function follow(buf, seq, token) {
+      const nxt = buf.concat([token]);
+      if (same(nxt, seq)) return { hit: true, buf: [] };
+      if (isPrefix(seq, nxt)) return { hit: false, buf: nxt };
+      const restart = [token];
+      if (isPrefix(seq, restart)) return { hit: false, buf: restart };
+      return { hit: false, buf: [] };
+    }
+    function feed(index) {
+      const had = buffer.length > 0;
+      const nxt = buffer.concat([index]);
+      if (same(nxt, EGG.seq)) {
+        buffer = [];
+        return { egg: EGG };
+      }
+      if (isPrefix(EGG.seq, nxt)) {
+        buffer = nxt;
+        return { egg: null };
+      }
+      if (isPrefix(EGG.seq, [index])) {
+        buffer = [index];
+        return { egg: null };
+      }
+      buffer = [];
+      return { egg: null, dropped: had };
+    }
+    function paintHold() {
+      slab.classList.toggle("coding", buffer.length > 0);
+    }
+    function armHold() {
+      paintHold();
+      window.clearTimeout(holdTimer);
+      if (!buffer.length) return;
+      holdTimer = window.setTimeout(() => {
+        buffer = [];
+        paintHold();
+        show("DROP", "Four seconds. The order dropped.");
+      }, HOLD_MS);
+    }
+    function makeUtterance(text, name) {
+      const u = new SpeechSynthesisUtterance(text);
+      const voices = window.speechSynthesis ? window.speechSynthesis.getVoices() : [];
+      const want = String(name || voiceName).toLowerCase();
+      const hit = voices.find((v) => v.name.toLowerCase().indexOf(want) !== -1);
+      if (hit) u.voice = hit;
+      u.rate = RATES[name] || RATES[voiceName] || 1;
+      u.pitch = PITCH[name] || PITCH[voiceName] || 1;
+      return u;
+    }
+    function talk(text, name) {
+      if (!armed) return;
+      const synth = window.speechSynthesis;
+      if (!synth) return;
+      const my = ++talkToken;
+      try { synth.cancel(); } catch (e) {}
+      try { synth.resume(); } catch (e) {}
+      const u = makeUtterance(text, name);
+      u.onerror = () => { if (my !== talkToken) return; };
+      try { synth.speak(u); } catch (e) {}
+    }
+    function cut() {
+      talkToken += 1;
+      if (window.speechSynthesis) {
+        try { window.speechSynthesis.cancel(); } catch (e) {}
+      }
+      show("CUT", "Clip stopped.");
+    }
+    function paintVoice() {
+      voiceBtn.textContent = voiceName.toUpperCase();
+    }
+    function paintArm() {
+      armBtn.setAttribute("aria-pressed", armed ? "true" : "false");
+      armBtn.textContent = armed ? "ARMED" : "ARM";
+    }
+    function paintSpace() {
+      spaceBtn.setAttribute("aria-pressed", spaceOn ? "true" : "false");
+      spaceBtn.textContent = spaceOn ? "IN SPACE" : "SPACE";
+    }
+    function paint() {
+      const hold = lit !== null;
+      const r = hold ? Math.floor(lit / 8) : 0;
+      const c = hold ? lit % 8 : 0;
+      for (let n = 0; n < buttons.length; n++) {
+        const el = buttons[n];
+        const rr = Math.floor(n / 8), cc = n % 8;
+        const close = hold && Math.abs(rr - r) <= 1 && Math.abs(cc - c) <= 1 && n !== lit;
+        el.classList.toggle("hot", hold && n === lit);
+        el.classList.toggle("near", close);
+        el.classList.toggle("cursor", n === cursor);
+      }
+    }
+    function ripple() {
+      for (let n = 0; n < buttons.length; n++) {
+        const delay = (Math.floor(n / 8) + (n % 8)) * 28;
+        window.setTimeout(() => {
+          buttons[n].classList.add("wave");
+          window.setTimeout(() => buttons[n].classList.remove("wave"), 220);
+        }, delay);
+      }
+    }
+    function celebrate(kind) {
+      slab.classList.add(kind);
+      window.clearTimeout(eggTimer);
+      eggTimer = window.setTimeout(() => slab.classList.remove(kind), 3200);
+    }
+    function save() {
+      try { localStorage.setItem(STORE, JSON.stringify({ voice: voiceName })); } catch (e) {}
+    }
+    function toggleArm() {
+      heard = true;
+      started = true;
+      armed = !armed;
+      paintArm();
+      if (!armed) {
+        talkToken += 1;
+        if (window.speechSynthesis) {
+          try { window.speechSynthesis.cancel(); } catch (e) {}
+        }
+        show("MUTED", "Muted. Tap ARM to hear the keys.");
+      } else {
+        show("ARMED", spaceOn ? "Armed. A Space hears this Mac output." : "Armed. Tap a key.");
+        talk("Armed.", voiceName);
+      }
+    }
+    function toggleSpace() {
+      spaceOn = !spaceOn;
+      paintSpace();
+      show(spaceOn ? "IN SPACE" : "DESK", spaceOn ? "Point the Space mic at this Mac output. BlackHole or Loopback." : "Desk mode. Tap a key.");
+    }
+    function cycleVoice() {
+      const i = VOICES.indexOf(voiceName);
+      voiceName = VOICES[(i + 1) % VOICES.length];
+      save();
+      paintVoice();
+      show("VOICE", voiceName);
+      if (armed) talk(voiceName + ".", voiceName);
+    }
+    function pokeIdle() {
+      started = true;
+      window.clearTimeout(idleTimer);
+      idleTimer = window.setTimeout(stepIdle, 7000);
+    }
+    function stepIdle() {
+      if (buffer.length || slab.classList.contains("egg") || slab.classList.contains("night") || !started) {
+        idleTimer = window.setTimeout(stepIdle, 1000);
+        return;
+      }
+      const rows = [
+        ["COOK", "Sixty-four keys. Arrow keys walk. Enter presses."],
+        ["ORDER", "Ship, then green, then cook. The lamp counts."],
+        ["SPACE", spaceOn ? "Point the Space mic at this Mac output." : "Space mode is how a room hears the clip."]
+      ];
+      const row = rows[idleN % rows.length];
+      show(row[0], row[1]);
+      idleN += 1;
+      idleTimer = window.setTimeout(stepIdle, 4200);
+    }
+    function secret(hit) {
+      show(hit.name, hit.show);
+      talk(hit.say, hit.voice);
+    }
+    function press(i) {
+      cursor = i;
+      lit = i;
+      paint();
+      if (!heard) {
+        heard = true;
+        armed = true;
+        paintArm();
+      }
+      const result = feed(i);
+      armHold();
+      played.add(i);
+      if (result.egg) {
+        secret(result.egg);
+        ripple();
+        celebrate("egg");
+      } else {
+        show(armed ? "SAYS" : "MUTED", KEYS[i].show);
+        talk(KEYS[i].say, voiceName);
+      }
+      if (!served && played.size === 64 && !result.egg) {
+        served = true;
+        secret(SERVICE);
+        ripple();
+        celebrate("egg");
+      }
+      pokeIdle();
+    }
+    let cells = "";
+    for (let i = 0; i < KEYS.length; i++) {
+      const k = KEYS[i];
+      cells += '<button type="button" class="key" data-i="' + i + '" style="--h:' + k.hue + '" aria-label="' + k.code + ". " + k.show + '"><i class="led" aria-hidden="true"></i><b>' + k.code + '</b></button>';
+    }
+    keysEl.innerHTML = cells;
+    for (let i = 0; i < KEYS.length; i++) buttons.push(keysEl.children[i]);
+    paint();
+    keysEl.addEventListener("click", (ev) => {
+      const el = ev.target.closest("button");
+      if (!el || el.dataset.i == null) return;
+      press(el.dataset.i | 0);
+    });
+    armBtn.addEventListener("click", toggleArm);
+    cutBtn.addEventListener("click", cut);
+    voiceBtn.addEventListener("click", cycleVoice);
+    spaceBtn.addEventListener("click", toggleSpace);
+    window.addEventListener("keydown", (ev) => {
+      if (ev.metaKey || ev.ctrlKey || ev.altKey || ev.repeat) return;
+      const token = ev.key.length === 1 ? ev.key.toLowerCase() : ev.key;
+      if (token === " " || token === "Escape") {
+        ev.preventDefault();
+        cut();
+        return;
+      }
+      if (token === "ArrowLeft" || token === "ArrowRight" || token === "ArrowUp" || token === "ArrowDown") {
+        ev.preventDefault();
+        const col = cursor % 8, row = Math.floor(cursor / 8);
+        if (token === "ArrowLeft") cursor = row * 8 + (col + 7) % 8;
+        if (token === "ArrowRight") cursor = row * 8 + (col + 1) % 8;
+        if (token === "ArrowUp") cursor = ((row + 7) % 8) * 8 + col;
+        if (token === "ArrowDown") cursor = ((row + 1) % 8) * 8 + col;
+        paint();
+      }
+      if (token === "Enter") {
+        if (ev.target && ev.target.tagName === "BUTTON") return;
+        ev.preventDefault();
+        press(cursor);
+      }
+      const word = follow(wordBuf, WORD.seq, token);
+      wordBuf = word.buf;
+      if (word.hit) {
+        secret(WORD);
+        ripple();
+        celebrate("egg");
+      }
+      const night = follow(nightBuf, NIGHT.seq, token);
+      nightBuf = night.buf;
+      if (night.hit) {
+        secret(NIGHT);
+        celebrate("night");
+      }
+    });
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORE) || "{}");
+      if (VOICES.indexOf(saved.voice) !== -1) voiceName = saved.voice;
+    } catch (e) {}
+    paintVoice();
+    paintArm();
+    paintSpace();
+    if (window.speechSynthesis) {
+      window.speechSynthesis.getVoices();
+      window.speechSynthesis.addEventListener("voiceschanged", paintVoice);
+    }
+  })();
+  </script>
+</body>
+</html>
