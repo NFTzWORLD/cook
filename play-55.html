@@ -47,9 +47,8 @@
   .slab:before { top: 10px; left: 12px; }
   .slab:after { top: 10px; right: 12px; }
   .topline { display: flex; align-items: center; gap: 8px; margin: 8px 4px 2px; min-width: 0; }
-  .brand { display: flex; align-items: baseline; gap: 6px; min-width: 0; }
-  .brand b { font-family: Impact, "Arial Black", sans-serif; font-weight: 900; font-size: 22px; letter-spacing: -.03em; color: #F5C518; line-height: 1; }
-  .brand span { font-family: Impact, "Arial Black", sans-serif; font-size: 11px; letter-spacing: .18em; color: var(--plate); }
+  .brand { display: flex; align-items: baseline; min-width: 0; }
+  .brand b { font-family: Impact, "Arial Black", sans-serif; font-weight: 900; font-size: 20px; letter-spacing: -.03em; color: #F5C518; line-height: 1; }
   .skinlab { margin-left: auto; font-style: normal; font-size: 11px; letter-spacing: .16em; text-transform: uppercase; color: var(--lip); }
   .gateart { display: none; width: 32px; height: 32px; border-radius: 5px; flex: none; }
   .slab[data-skin="gate"] .gateart { display: block; }
@@ -122,6 +121,7 @@
   @media (max-width: 520px) {
     body { padding: 8px; }
     .slab { padding: 12px 8px 10px; border-radius: 20px; }
+    .brand b { font-size: 16px; }
     .key b { font-size: 7px; }
     #lcdText { font-size: 17px; }
     #plate { letter-spacing: .12em; }
@@ -131,7 +131,7 @@
 <body>
   <div class="slab" id="slab" data-skin="blueprint">
     <div class="topline">
-      <div class="brand" aria-label="NFTzWORLD"><b>NFTz</b><span>WORLD</span></div>
+      <div class="brand" aria-label="NFTzWORLD"><b>NFTzWORLD</b></div>
       <em class="skinlab">Blueprint</em>
       <svg class="gateart" viewBox="0 0 1024 1024" aria-hidden="true">
         <rect width="1024" height="1024" fill="#000"/>
